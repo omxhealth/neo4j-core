@@ -38,7 +38,16 @@ module Neo4j
             transaction.apply_id_from_url!(faraday_response.env[:response_headers][:location])
 
             wrap_level = options[:wrap_level] || @options[:wrap_level]
-            Responses::HTTP.new(faraday_response, wrap_level: wrap_level).results
+            begin
+              return Responses::HTTP.new(faraday_response, wrap_level: wrap_level).results
+            rescue
+              $stderr.puts "failed in query (#{queries.count}):"
+              queries.each do |query|
+                $stderr.puts "\tstatement: #{query.cypher}"
+                $stderr.puts "\tparameters: #{query.parameters.inspect}"
+              end
+              raise
+            end
           end
 
           def version(_session)

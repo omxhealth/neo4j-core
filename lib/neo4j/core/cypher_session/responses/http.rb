@@ -15,6 +15,12 @@ module Neo4j
 
             @wrap_level = options[:wrap_level] || Neo4j::Core::Config.wrapping_level
 
+            if !faraday_response.body.is_a?(Hash)
+              $stderr.puts "weird neo4j request with status: #{faraday_response.status}"
+              $stderr.puts faraday_response.body.class.name
+              $stderr.puts faraday_response.body.inspect
+            end
+
             @results = faraday_response.body[:results].map do |result_data|
               result_from_data(result_data[:columns], result_data[:data])
             end
